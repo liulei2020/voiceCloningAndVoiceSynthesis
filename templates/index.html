@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>语音克隆和语音合成</title>
+<style>
+  .success-message {
+    color: red;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+  <h1>语音克隆和语音合成</h1>
+  <form method="post" action="/">
+    <label for="am_inference_dir">模型路径:</label>
+    <input type="text" id="am_inference_dir" name="am_inference_dir" style="width: 400px;"><br><br>
+    <label for="voc_inference_dir">编码器路径:</label>
+    <input type="text" id="voc_inference_dir" name="voc_inference_dir" style="width: 400px;"><br><br>
+    <label for="wav_output_dir">输出路径:</label>
+    <input type="text" id="wav_output_dir" name="wav_output_dir" style="width: 400px;"><br><br>
+    <label for="device">gpu or cpu:</label>
+    <input type="text" id="device" name="device" style="width: 400px;"><br><br>
+    <label for="text_dict">文本:</label>
+    <textarea id="text_dict" name="text_dict" style="width: 400px;"></textarea>
+    <br><br>
+    <input type="submit" value="点击生成">
+</form>
+<span id="successMessage" class="success-message"></span>
+  <h2>合成语音：</h2>
+  <table id="audioTable">
+    <tr>
+      <th>文件名</th>
+      <th>操作</th>
+    </tr>
+  </table>
+
+  <script>
+    function playAudio(url) {
+      const audioPlayer = document.getElementById('audioPlayer');
+      audioPlayer.src = url;
+      audioPlayer.play();
+    }
+
+    // 获取HTML内容
+    fetch('http://localhost:85/')
+      .then(response => response.text())
+      .then(html => {
+        const audioTable = document.getElementById('audioTable');
+const successMessage = document.getElementById('successMessage'); // 获取用于显示成功消息的元素
+
+        // 创建临时div元素用于解析HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+
+        // 提取音频文件信息
+        const fileLinks = tempDiv.querySelectorAll('a[href$=".wav"]');
+        fileLinks.forEach(link => {
+          const fileName = link.textContent.trim();
+          const fileUrl = 'http://localhost:85/' + link.getAttribute('href');
+
+          const row = document.createElement('tr');
+
+          const fileNameCell = document.createElement('td');
+          fileNameCell.textContent = fileName;
+          row.appendChild(fileNameCell);
+
+          const playButtonCell = document.createElement('td');
+          const playButton = document.createElement('button');
+          playButton.textContent = '播放';
+          playButton.addEventListener('click', () => {
+            playAudio(fileUrl);
+          });
+          playButtonCell.appendChild(playButton);
+          row.appendChild(playButtonCell);
+
+          audioTable.appendChild(row);
+        });
+    // 检查是否成功生成音频，如果是，则显示成功消息
+    const isSuccess = tempDiv.querySelector('.success-message');
+    if (isSuccess) {
+      successMessage.textContent = '生成成功！';
+    }
+
+      })
+      .catch(error => {
+        console.error('获取音频文件列表时出错:', error);
+      });
+  </script>
+
+  <audio id="audioPlayer"></audio>
+</body>
+</html>
