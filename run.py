@@ -47,9 +47,9 @@ def generate_audio(am_inference_dir, voc_inference_dir, wav_output_dir, device, 
     utt_id, sentence = sentences[0]
     wav_paths = []  # List to store the paths of the generated audio files
 
-    if len(sentence) > 20:
-        # Split the sentence into chunks of size 20
-        chunks = [sentence[i:i+20] for i in range(0, len(sentence), 20)]
+    if len(sentence) > 30:
+        # Split the sentence into chunks of size 30
+        chunks = [sentence[i:i+30] for i in range(0, len(sentence), 30)]
         
         # Create a new dictionary with numbered keys
         text_dict_chunked = {i: chunk for i, chunk in enumerate(chunks)}
@@ -79,6 +79,10 @@ def generate_audio(am_inference_dir, voc_inference_dir, wav_output_dir, device, 
         # Save the merged file
         merged_wav_path = output_dir / f"{utt_id}_merged.wav"
         sf.write(merged_wav_path, merged_wav, samplerate=24000)
+        
+        # Remove individual audio files after merging
+        for path in wav_paths:
+            os.remove(path)
 
         # Return the paths of the generated audio files
         return merged_wav_path
